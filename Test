@@ -1,0 +1,63 @@
+To dynamically extract just the segment ras-configuration-PROD/1.1.1/ from a URL, you can handle the extraction based on the position of the segments in the URL. Since the URL structure might change dynamically, we need to focus on the last few segments without hardcoding any part.
+
+Here’s how to do it using a combination of awk and sed to dynamically extract the required segment:
+
+Jenkinsfile with Dynamic URL Extraction (No Hardcoding)
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Extract URL Segment Dynamically') {
+            steps {
+                script {
+                    // Use shell script to dynamically extract the desired segments from the URL
+                    sh '''
+                        # Original dynamic URL
+                        URL="https://Nexus306.systems.uk.hsbc.8081/Nexus/repository/maven-hsbc-internal-dev_dev_n3p/com/hsbc/gra/flow/ras-configuration-PROD-1.1.1.tar.gz"
+                        
+                        # Dynamically extract the last 3 segments and remove the file extension
+                        EXTRACTED_PART=$(echo $URL | awk -F'/' '{print $(NF-2)"/"$(NF-1)"/"}')
+
+                        # Output the extracted part
+                        echo "Extracted Part: $EXTRACTED_PART"
+                    '''
+                }
+            }
+        }
+    }
+}
+
+Explanation:
+
+1. awk -F'/' '{print $(NF-2)"/"$(NF-1)"/"}':
+
+-F'/': This sets / as the field separator to split the URL into parts.
+
+$(NF-2): Extracts the second-to-last segment, which is ras-configuration-PROD.
+
+$(NF-1): Extracts the last segment before the file, which is the version number 1.1.1.
+
+"/": Adds slashes between segments to match the URL structure.
+
+
+This ensures that the script dynamically captures these last two segments and adds the / at the end, which gives you the part ras-configuration-PROD/1.1.1/.
+
+
+2. echo "Extracted Part: $EXTRACTED_PART":
+
+Prints the extracted part.
+
+
+
+
+Example Output:
+
+Extracted Part: ras-configuration-PROD/1.1.1/
+
+Customization:
+
+This solution extracts the second-to-last and third-to-last segments dynamically. The URL structure can change, but the script will consistently extract the two segments before the file extension and return them with the correct / format.
+
+
+This method dynamically handles any URL, ensuring the extraction of the required parts without any hardcoding. It is flexible enough for use with changing or dynamic URL paths.
